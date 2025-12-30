@@ -13,6 +13,8 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     curl \
     cmake \
+    libicu-dev \
+    liblz4-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Rust
