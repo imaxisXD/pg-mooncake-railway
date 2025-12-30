@@ -3,6 +3,29 @@ FROM mooncakelabs/pg_mooncake:latest
 
 USER root
 
+# Create custom entrypoint to handle Railway volume mount with lost+found
+RUN cat > /usr/local/bin/railway-entrypoint.sh <<'ENTRYPOINT'
+#!/bin/bash
+set -e
+
+# Railway mounts volume - use different path to avoid conflict with other DBs
+MOUNT_POINT="/var/lib/postgresql/mooncake"
+ACTUAL_PGDATA="$MOUNT_POINT/pgdata"
+
+# Create the actual data subdirectory if it doesn't exist
+mkdir -p "$ACTUAL_PGDATA"
+chown postgres:postgres "$ACTUAL_PGDATA"
+chmod 700 "$ACTUAL_PGDATA"
+
+# Override PGDATA to point to the subdirectory
+export PGDATA="$ACTUAL_PGDATA"
+
+# Run the original postgres entrypoint
+exec docker-entrypoint.sh "$@"
+ENTRYPOINT
+
+RUN chmod +x /usr/local/bin/railway-entrypoint.sh
+
 # Create init script to configure mooncake with Railway S3 bucket
 RUN mkdir -p /docker-entrypoint-initdb.d && \
     cat > /docker-entrypoint-initdb.d/01-init-mooncake.sh <<'EOF'
@@ -46,5 +69,7 @@ RUN chmod +x /docker-entrypoint-initdb.d/01-init-mooncake.sh
 
 # Set default environment variables
 ENV POSTGRES_DB=railway
-# Use subdirectory to avoid lost+found issue with Railway volume mounts
-ENV PGDATA=/var/lib/postgresql/mooncake/data
+
+# Use custom entrypoint that handles lost+found issue
+ENTRYPOINT ["/usr/local/bin/railway-entrypoint.sh"]
+CMD ["postgres"]
