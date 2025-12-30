@@ -46,4 +46,5 @@ RUN chmod +x /docker-entrypoint-initdb.d/01-init-mooncake.sh
 
 # Set default environment variables
 ENV POSTGRES_DB=railway
-ENV PGDATA=/var/lib/postgresql/data
+# Use subdirectory to avoid lost+found issue with Railway volume mounts
+ENV PGDATA=/var/lib/postgresql/mooncake/data
