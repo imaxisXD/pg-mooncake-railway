@@ -27,13 +27,13 @@ RUN git clone --recurse-submodules https://github.com/Mooncake-Labs/pg_mooncake.
 
 # Initialize pgrx with PostgreSQL 18
 WORKDIR /tmp/pg_mooncake
-RUN cargo pgrx init --pg17=/usr/lib/postgresql/18/bin/pg_config
+RUN cargo pgrx init --pg18=/usr/lib/postgresql/18/bin/pg_config
 
 # Install pg_duckdb first (required dependency)
-RUN make pg_duckdb PG_VERSION=pg17
+RUN make pg_duckdb PG_VERSION=pg18
 
 # Install pg_mooncake
-RUN make install PG_VERSION=pg17
+RUN make install PG_VERSION=pg18
 
 # Cleanup
 RUN rm -rf /tmp/pg_mooncake /root/.cargo/registry /root/.cargo/git
